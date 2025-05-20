@@ -5,7 +5,6 @@ import cv2
 from PIL import Image
 import glob
 import pandas as pd
-import time
 import re
 
 # Function for natural sorting
