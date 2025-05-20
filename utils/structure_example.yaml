@@ -1,0 +1,72 @@
+root (np.array, dtype=object, length=10):
+- root_0 (dict):
+    actions:
+      actions (list, length=44):
+      - actions_0 (np.array, shape=4, dtype=float64): null
+      - '...'
+    agent_infos:
+      agent_infos (list, length=44):
+      - agent_infos_0 (dict):
+          hand_distance:
+            hand_distance (float64): null
+          hand_success:
+            hand_success (float64): null
+      - '...'
+    env_infos:
+      env_infos (list, length=44):
+      - env_infos_0 (dict):
+          hand_distance:
+            hand_distance (float64): null
+          hand_success:
+            hand_success (float64): null
+      - '...'
+    next_observations:
+      next_observations (list, length=44):
+      - next_observations_0 (dict):
+          achieved_goal:
+            achieved_goal (np.array, shape=3, dtype=float64): null
+          desired_goal:
+            desired_goal (np.array, shape=3, dtype=float64): null
+          hires_image_observation:
+            hires_image_observation (np.array, shape=(480, 640, 3), dtype=uint8): null
+          image_observation:
+            image_observation (np.array, shape=(480, 640, 3), dtype=uint8): null
+          observation:
+            observation (np.array, shape=3, dtype=float64): null
+          state_achieved_goal:
+            state_achieved_goal (np.array, shape=3, dtype=float64): null
+          state_desired_goal:
+            state_desired_goal (np.array, shape=3, dtype=float64): null
+          state_observation:
+            state_observation (np.array, shape=3, dtype=float64): null
+      - '...'
+    observations:
+      observations (list, length=44):
+      - observations_0 (dict):
+          achieved_goal:
+            achieved_goal (np.array, shape=3, dtype=float64): null
+          desired_goal:
+            desired_goal (np.array, shape=3, dtype=float64): null
+          hires_image_observation:
+            hires_image_observation (np.array, shape=(480, 640, 3), dtype=uint8): null
+          image_observation:
+            image_observation (np.array, shape=(480, 640, 3), dtype=uint8): null
+          observation:
+            observation (np.array, shape=3, dtype=float64): null
+          state_achieved_goal:
+            state_achieved_goal (np.array, shape=3, dtype=float64): null
+          state_desired_goal:
+            state_desired_goal (np.array, shape=3, dtype=float64): null
+          state_observation:
+            state_observation (np.array, shape=3, dtype=float64): null
+      - '...'
+    rewards:
+      rewards (list, length=44):
+      - rewards_0 (int): null
+      - '...'
+    terminals:
+      terminals (list, length=44):
+      - terminals_0 (bool): null
+      - '...'
+- '...'
+
