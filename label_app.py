@@ -1,20 +1,74 @@
 import streamlit as st
 import numpy as np
+import pandas as pd
 import os
 import cv2
 from PIL import Image
-import glob
-import pandas as pd
-import time
 import re
+from io import BytesIO
+import json
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+import json
+
+@st.cache_resource
+def setup_drive_service():
+    try:
+        # Try to load from Streamlit secrets first (for deployment)
+        if hasattr(st, 'secrets') and 'google_service_account' in st.secrets:
+            service_account_info = dict(st.secrets["google_service_account"])
+        else:
+            # Fallback to local file for development
+            with open('service-account-key.json', 'r') as f:
+                service_account_info = json.load(f)
+        
+        credentials = service_account.Credentials.from_service_account_info(
+            service_account_info, 
+            scopes=['https://www.googleapis.com/auth/drive.readonly']
+        )
+        
+        return build('drive', 'v3', credentials=credentials)
+    
+    except Exception as e:
+        st.error(f"Failed to setup Google Drive service: {str(e)}")
+        return None
 
 # Function for natural sorting
 def natural_sort_key(s):
     return [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', s)]
 
-# Load all subdirectories
-data_dir = "data/"
-subdirs = sorted([os.path.join(data_dir, d) for d in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, d))], key=natural_sort_key)
+# Load filepath/ID mapping
+file_mapping = json.load(open('drive_file_mapping.json'))
+
+# Extract directory structure from mapping
+drive_structure = {}
+for file_path in file_mapping.keys():
+    parts = file_path.split('/')
+    subdir = parts[0] 
+    filename = parts[1]
+    if subdir not in drive_structure:
+        drive_structure[subdir] = []
+    drive_structure[subdir].append(filename)
+subdirs = sorted(drive_structure.keys(), key=natural_sort_key)
+
+@st.cache_data(ttl=600)
+def load_npy_from_drive(file_id):
+    service = setup_drive_service()
+    
+    try:
+        # Download file content using API
+        request = service.files().get_media(fileId=file_id)
+        file_content = request.execute()
+        
+        # Load numpy array from bytes
+        return np.load(BytesIO(file_content), allow_pickle=True)
+    
+    except Exception as e:
+        st.error(f"Failed to download file {file_id}: {str(e)}")
+        return None
 
 if not subdirs:
     st.error("No subdirectories found in the data directory.")
@@ -30,7 +84,8 @@ else:
     selected_dir = st.sidebar.selectbox("Select a directory", subdirs, format_func=lambda x: os.path.basename(x))
 
     # Load .npy files from the selected directory
-    files = sorted(glob.glob(os.path.join(selected_dir, "*.npy")), key=natural_sort_key)
+    files = sorted(drive_structure[selected_dir], key=natural_sort_key)
+    # files = sorted(glob.glob(os.path.join(selected_dir, "*.npy")), key=natural_sort_key)
     if not files:
         st.error("No .npy files found in the selected directory.")
     else:
@@ -38,7 +93,21 @@ else:
         selected_file = st.sidebar.selectbox("Select a file", files, format_func=lambda x: os.path.basename(x))
 
         if selected_file:
-            data = np.load(selected_file, allow_pickle=True)
+            # Get relative path for file mapping
+            subdir_name = os.path.basename(selected_dir)
+            file_name = os.path.basename(selected_file)
+            file_path = f"{subdir_name}/{file_name}"
+            
+            # Load from Google Drive
+            file_id = file_mapping.get(file_path)
+            if file_id:
+                data = load_npy_from_drive(file_id)
+            else:
+                st.error(f"File ID not found for {file_path}")
+                data = None
+
+            if data is None:
+                st.stop()
             st.sidebar.write(f"Number of trajectories: {len(data)}")
 
             # Load the CSV file
