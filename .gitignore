@@ -1,2 +1,4 @@
 /data
-.streamlit/secrets.toml
+/rlkit_labels
+.streamlit/
+**/__pycache__
